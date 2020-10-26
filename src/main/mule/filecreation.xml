@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c3e0e780-7b01-4ce1-a3a6-d90fbf8b6a97" >
+		<http:listener-connection host="0.0.0.0" port="${secure::http.port}" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="f26f4d4c-5279-4ced-b103-a9f1dd220480" >
+		<file:connection workingDir="C:\Users\yoweg\Desktop\Method file" />
+	</file:config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="1fa5358f-33d0-4b5f-a187-9e7a568fa5ba" file="${env}.yaml" key="${enc.key}"/>
+	<flow name="filecreationFlow" doc:id="2d49e344-cbc0-40ae-a336-72ac35d83f15" >
+		<http:listener doc:name="Listener" doc:id="2efbbaa4-1a06-42d2-92b0-bebca00ed093" config-ref="HTTP_Listener_config" path="${secure::http.path}"/>
+		<ee:transform doc:name="Transform Message" doc:id="5d5ef236-e4ac-424f-b1f8-9757cef331df" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+ " You are invoked with " ++ (attributes.method default " ")++ " method."]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="Write" doc:id="38b44465-40e1-4189-b2aa-9557759d6969" path='#[(attributes.method default "wrong") ++ ".txt"]' config-ref="File_Config" mode="CREATE_NEW"/>
+	</flow>
+</mule>
